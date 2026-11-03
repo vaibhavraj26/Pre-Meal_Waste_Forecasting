@@ -2,14 +2,34 @@ import sys
 import subprocess
 import time
 import os
+import shutil
 import signal
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
 def run_both():
+    is_cloud = bool(os.getenv("RENDER") or os.getenv("DYNO") or os.getenv("RAILWAY_STATIC_URL"))
+    node_available = shutil.which("node") is not None
+    port = os.getenv("PORT")
+
+    # In cloud environments or if Node.js is missing, run Flask in unified mode
+    if (is_cloud and port) or not node_available:
+        print("================================================================")
+        print(" Starting Smart Mess in Unified Fullstack Cloud Mode...")
+        print(f" Port: {port or 5000}")
+        print("================================================================")
+        py_cmd = [sys.executable, str(BASE_DIR / "backend" / "app.py")]
+        py_proc = subprocess.Popen(py_cmd, cwd=str(BASE_DIR))
+        try:
+            py_proc.wait()
+        except KeyboardInterrupt:
+            py_proc.terminate()
+        return
+
+    # Local development mode: Run both Python Flask (5000) and Node.js Express (3000)
     print("================================================================")
-    print(" Starting Smart Mess Food Waste Prediction System...")
+    print(" Starting Smart Mess Food Waste Prediction System (Dev Mode)...")
     print(" Backend ML API:  http://localhost:5000")
     print(" Web Application: http://localhost:3000")
     print("================================================================")
