@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Record Actual Meal - Smart Mess System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand navbar-brand-custom" href="/">
+        <span class="brand-icon"><i class="bi bi-shield-check"></i></span>
+        Smart Mess Predictor
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+          <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link" href="/predict"><i class="bi bi-cpu me-1"></i> Predict Waste</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/add-meal"><i class="bi bi-plus-circle me-1"></i> Add Meal Record</a></li>
+          <li class="nav-item"><a class="nav-link" href="/history"><i class="bi bi-table me-1"></i> Meal History</a></li>
+          <li class="nav-item"><a class="nav-link" href="/analytics"><i class="bi bi-graph-up-arrow me-1"></i> Analytics Hub</a></li>
+          <li class="nav-item"><a class="nav-link" href="/model"><i class="bi bi-bar-chart-steps me-1"></i> Model Performance</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          <span id="nav-db-status" class="db-status-pill bg-secondary text-white">Checking DB</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+      <div>
+        <h3 class="fw-bold text-dark mb-1">Add Actual Meal Record</h3>
+        <p class="text-muted mb-0">Record post-meal kitchen measurements, actual attendance, and leftover quantities to MongoDB.</p>
+      </div>
+      <a href="/history" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> View Meal History
+      </a>
+    </div>
+
+    <!-- Success Banner -->
+    <div id="save-success-banner" class="alert alert-success alert-dismissible fade show d-none mb-4" role="alert">
+      <div class="d-flex align-items-center">
+        <i class="bi bi-check-circle-fill fs-3 me-3 text-success"></i>
+        <div>
+          <h5 class="alert-heading fw-bold mb-1">Meal Record Successfully Stored in MongoDB!</h5>
+          <p class="mb-0">The record has been indexed and will now inform future ML predictions and dashboard analytics.</p>
+        </div>
+      </div>
+      <div class="mt-2 text-end">
+        <a href="/history" class="btn btn-sm btn-outline-success">View in History Table</a>
+      </div>
+      <button type="button" class="btn-close" onclick="this.parentElement.classList.add('d-none')"></button>
+    </div>
+
+    <form id="add-meal-form">
+      <div class="row g-4">
+        <!-- Main Form Column -->
+        <div class="col-12 col-lg-8">
+          <div class="custom-card">
+            <h5 class="fw-bold mb-3"><i class="bi bi-pencil-square me-2 text-primary"></i> Meal Logistics & Attendance</h5>
+
+            <!-- Date, Meal Type & Category -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label for="meal-date" class="form-label fw-semibold small">Meal Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="meal-date" required>
+              </div>
+              <div class="col-md-4">
+                <label for="meal-type" class="form-label fw-semibold small">Meal Type <span class="text-danger">*</span></label>
+                <select class="form-select" id="meal-type" required onchange="filterAddMealChips()">
+                  <option value="Breakfast">Breakfast</option>
+                  <option value="Lunch" selected>Lunch</option>
+                  <option value="Dinner">Dinner</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label for="meal-food-category" class="form-label fw-semibold small">Food Category <span class="text-danger">*</span></label>
+                <select class="form-select" id="meal-food-category" required>
+                  <option value="North Indian" selected>North Indian</option>
+                  <option value="South Indian">South Indian</option>
+                  <option value="Non-Veg">Non-Veg</option>
+                  <option value="Mughlai/Special">Mughlai/Special</option>
+                  <option value="South/West Indian">South/West Indian</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Menu Items & Quick Chips -->
+            <div class="mb-3">
+              <label for="meal-menu-items" class="form-label fw-semibold small">Menu Dish Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control mb-2" id="meal-menu-items" placeholder="e.g. Rajma Chawal" value="Rajma Chawal" required>
+              <div class="small text-muted mb-1">Quick Auto-Fill Menu Dish:</div>
+              <div id="add-food-chips" class="d-flex flex-wrap gap-1"></div>
+            </div>
+
+            <!-- Complexity & Event -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="meal-menu-complexity" class="form-label fw-semibold small">Menu Complexity <span class="text-danger">*</span></label>
+                <select class="form-select" id="meal-menu-complexity" required>
+                  <option value="Simple">Simple (Single dish / Light)</option>
+                  <option value="Moderate" selected>Moderate (Standard combo)</option>
+                  <option value="Heavy">Heavy (Rich gravy / Fried items)</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="meal-weather" class="form-label fw-semibold small">Weather Condition <span class="text-danger">*</span></label>
+                <select class="form-select" id="meal-weather" required>
+                  <option value="Sunny" selected>Sunny</option>
+                  <option value="Rainy">Rainy</option>
+                  <option value="Cold">Cold</option>
+                  <option value="Humid">Humid</option>
+                  <option value="Hot">Hot</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+              <div class="col-md-4">
+                <label for="meal-expected-students" class="form-label fw-semibold small">Expected Students <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="meal-expected-students" value="400" min="10" required>
+              </div>
+              <div class="col-md-4">
+                <label for="meal-actual-attendance" class="form-label fw-semibold small">Actual Attendance <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="meal-actual-attendance" value="380" min="10" required>
+              </div>
+              <div class="col-md-4">
+                <label for="meal-total-population" class="form-label fw-semibold small">Total Population <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="meal-total-population" value="500" min="50" required>
+              </div>
+            </div>
+
+            <h5 class="fw-bold mb-3"><i class="bi bi-speedometer2 me-2 text-primary"></i> Food Quantities (in Kilograms)</h5>
+
+            <!-- Food Prepared, Consumed, Leftover -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label for="meal-food-prepared" class="form-label fw-semibold small">Food Prepared (kg) <span class="text-danger">*</span></label>
+                <input type="number" step="0.1" class="form-control form-control-lg fw-bold" id="meal-food-prepared" value="180.0" min="1" required>
+              </div>
+              <div class="col-md-4">
+                <label for="meal-food-consumed" class="form-label fw-semibold small">Food Consumed (kg) <span class="text-danger">*</span></label>
+                <input type="number" step="0.1" class="form-control form-control-lg fw-bold" id="meal-food-consumed" value="155.0" min="0" required>
+              </div>
+              <div class="col-md-4">
+                <label for="meal-food-leftover" class="form-label fw-semibold small">Leftover Food (kg) <span class="text-danger">*</span></label>
+                <input type="number" step="0.1" class="form-control form-control-lg fw-bold bg-light" id="meal-food-leftover" value="25.0" min="0" required>
+                <div class="form-text">Auto-calculated (Prepared - Consumed).</div>
+              </div>
+            </div>
+
+            <!-- Temperature & Event -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <label for="meal-temperature" class="form-label fw-semibold small">Temperature (&deg;C)</label>
+                <input type="number" step="0.1" class="form-control" id="meal-temperature" value="29.0">
+              </div>
+              <div class="col-md-8">
+                <label for="meal-event-details" class="form-label fw-semibold small">Special Event or Holiday Name (if any)</label>
+                <input type="text" class="form-control" id="meal-event-details" placeholder="e.g. Sports Day or None">
+              </div>
+            </div>
+
+            <div class="form-check form-switch mb-4">
+              <input class="form-check-input" type="checkbox" id="meal-is-holiday">
+              <label class="form-check-label fw-semibold small" for="meal-is-holiday">
+                Flag as Holiday / Event Day
+              </label>
+            </div>
+
+            <button type="submit" id="btn-save-meal" class="btn btn-success w-100 py-3 fw-bold fs-6">
+              <i class="bi bi-save2-fill me-2"></i> Save Meal Record in MongoDB
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Calculation Preview Column -->
+        <div class="col-12 col-lg-4">
+          <div class="custom-card sticky-top" style="top: 80px;">
+            <h5 class="fw-bold mb-3"><i class="bi bi-calculator-fill text-primary me-2"></i> Real-Time Calculation</h5>
+
+            <div class="p-3 bg-light rounded-3 border text-center mb-3">
+              <div class="text-muted small text-uppercase fw-semibold mb-1">Calculated Waste Rate</div>
+              <h1 id="preview-waste-pct" class="display-4 fw-bold text-dark mb-2">13.9%</h1>
+              <div id="preview-waste-badge" class="badge bg-success fs-6 px-3 py-2">
+                <i class="bi bi-check-circle-fill me-1"></i> LOW WASTE (&le;15%)
+              </div>
+            </div>
+
+            <ul class="list-group list-group-flush small mb-3">
+              <li class="list-group-item d-flex justify-content-between px-0">
+                <span class="text-muted">Standard Threshold:</span>
+                <strong>15.0%</strong>
+              </li>
+              <li class="list-group-item d-flex justify-content-between px-0">
+                <span class="text-muted">Database Target:</span>
+                <span class="badge bg-secondary">MongoDB (meals)</span>
+              </li>
+              <li class="list-group-item d-flex justify-content-between px-0">
+                <span class="text-muted">Model Training Availability:</span>
+                <span class="text-success fw-semibold">Immediate</span>
+              </li>
+            </ul>
+
+            <div class="alert alert-secondary small mb-0">
+              <i class="bi bi-info-circle me-1"></i>
+              Entering actual consumption metrics keeps the ML model grounded in real mess patterns.
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container text-center small">
+      Smart Mess Food Waste Prediction System &copy; 2026.
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/add-meal.js"></script>
+</body>
+</html>

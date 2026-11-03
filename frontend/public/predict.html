@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Predict Food Waste - Smart Mess System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
+    <div class="container-fluid px-4">
+      <a class="navbar-brand navbar-brand-custom" href="/">
+        <span class="brand-icon"><i class="bi bi-shield-check"></i></span>
+        Smart Mess Predictor
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+          <li class="nav-item"><a class="nav-link" href="/"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link active" href="/predict"><i class="bi bi-cpu me-1"></i> Predict Waste</a></li>
+          <li class="nav-item"><a class="nav-link" href="/add-meal"><i class="bi bi-plus-circle me-1"></i> Add Meal Record</a></li>
+          <li class="nav-item"><a class="nav-link" href="/history"><i class="bi bi-table me-1"></i> Meal History</a></li>
+          <li class="nav-item"><a class="nav-link" href="/analytics"><i class="bi bi-graph-up-arrow me-1"></i> Analytics Hub</a></li>
+          <li class="nav-item"><a class="nav-link" href="/model"><i class="bi bi-bar-chart-steps me-1"></i> Model Performance</a></li>
+        </ul>
+        <div class="d-flex align-items-center gap-2">
+          <span id="nav-db-status" class="db-status-pill bg-secondary text-white">Checking DB</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+      <div>
+        <h3 class="fw-bold text-dark mb-1">Pre-Meal Food Waste Prediction</h3>
+        <p class="text-muted mb-0">Enter upcoming meal schedule details. The model automatically analyses historical MongoDB data.</p>
+      </div>
+      <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+        <i class="bi bi-robot me-1"></i> Logistic Regression
+      </span>
+    </div>
+
+    <!-- Organizer Notice Banner -->
+    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4" role="alert">
+      <i class="bi bi-info-circle-fill fs-4 me-3 text-primary"></i>
+      <div class="small">
+        <strong>Automatic Historical Intelligence:</strong> You only need to enter pre-meal planning variables below. The system automatically retrieves and computes past attendance ratios, dish waste trends, and weekday patterns strictly from prior records in MongoDB.
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Input Form Card -->
+      <div class="col-12 col-lg-7">
+        <div class="custom-card">
+          <h5 class="fw-bold mb-3"><i class="bi bi-calendar-event me-2 text-primary"></i> Scheduled Meal Parameters</h5>
+
+          <form id="prediction-form">
+            <!-- Date & Meal Type -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="pred-date" class="form-label fw-semibold small">Meal Date <span class="text-danger">*</span></label>
+                <input type="date" class="form-control" id="pred-date" required>
+              </div>
+              <div class="col-md-6">
+                <label for="pred-meal-type" class="form-label fw-semibold small">Meal Type <span class="text-danger">*</span></label>
+                <select class="form-select" id="pred-meal-type" required onchange="filterChipsByMealType()">
+                  <option value="Breakfast">Breakfast</option>
+                  <option value="Lunch" selected>Lunch</option>
+                  <option value="Dinner">Dinner</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Food Category & Menu Items -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="pred-food-category" class="form-label fw-semibold small">Food Category <span class="text-danger">*</span></label>
+                <select class="form-select" id="pred-food-category" required>
+                  <option value="North Indian" selected>North Indian</option>
+                  <option value="South Indian">South Indian</option>
+                  <option value="Non-Veg">Non-Veg</option>
+                  <option value="Mughlai/Special">Mughlai/Special</option>
+                  <option value="South/West Indian">South/West Indian</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="pred-menu-complexity" class="form-label fw-semibold small">Menu Complexity <span class="text-danger">*</span></label>
+                <select class="form-select" id="pred-menu-complexity" required>
+                  <option value="Simple">Simple (Single dish / Light meal)</option>
+                  <option value="Moderate" selected>Moderate (Standard combo)</option>
+                  <option value="Heavy">Heavy (Rich gravy, fried or multi-course)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Menu Items Field & Quick Chips -->
+            <div class="mb-3">
+              <label for="pred-menu-items" class="form-label fw-semibold small">Menu Dish / Items <span class="text-danger">*</span></label>
+              <input type="text" class="form-control mb-2" id="pred-menu-items" placeholder="e.g. Rajma Chawal" value="Rajma Chawal" required>
+              <div class="small text-muted mb-1">Quick Select Dish from Hostel Menu:</div>
+              <div id="food-chips-container" class="d-flex flex-wrap gap-1">
+                <!-- Dynamically populated chips -->
+              </div>
+            </div>
+
+            <!-- Expected Students & Total Population -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="pred-expected-students" class="form-label fw-semibold small">Expected Students <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="pred-expected-students" min="10" max="2000" value="420" required>
+                <div class="form-text">Expected dining turnout.</div>
+              </div>
+              <div class="col-md-6">
+                <label for="pred-total-population" class="form-label fw-semibold small">Total Hostel Population <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" id="pred-total-population" min="50" max="2500" value="500" required>
+                <div class="form-text">Total registered hostellers.</div>
+              </div>
+            </div>
+
+            <!-- Weather & Temperature -->
+            <div class="row g-3 mb-3">
+              <div class="col-md-6">
+                <label for="pred-weather" class="form-label fw-semibold small">Weather Forecast <span class="text-danger">*</span></label>
+                <select class="form-select" id="pred-weather" required>
+                  <option value="Sunny" selected>Sunny / Clear</option>
+                  <option value="Rainy">Rainy / Monsoon</option>
+                  <option value="Cold">Cold / Winter</option>
+                  <option value="Humid">Humid</option>
+                  <option value="Hot">Hot / Scorching Summer</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="pred-temperature" class="form-label fw-semibold small">Temperature (&deg;C) <span class="text-danger">*</span></label>
+                <div class="d-flex align-items-center gap-2">
+                  <input type="range" class="form-range" id="pred-temp-slider" min="10" max="48" step="1" value="30">
+                  <input type="number" class="form-control form-control-sm text-center" id="pred-temperature" style="width: 70px;" value="30" min="5" max="50">
+                </div>
+              </div>
+            </div>
+
+            <!-- Holiday / Special Event -->
+            <div class="p-3 bg-light rounded border mb-4">
+              <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" id="pred-is-holiday">
+                <label class="form-check-label fw-semibold small" for="pred-is-holiday">
+                  Holiday, Weekend Leave, or Campus Festival?
+                </label>
+              </div>
+              <div class="mt-2">
+                <input type="text" class="form-control form-control-sm" id="pred-event-details" placeholder="Event details (optional, e.g. College Fest, Long Weekend)">
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="btn-submit-predict" class="btn btn-primary w-100 py-2 fw-semibold">
+              <i class="bi bi-magic me-2"></i> Run Food Waste Prediction
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Prediction Output Panel -->
+      <div class="col-12 col-lg-5">
+        <!-- Results Card -->
+        <div id="prediction-results-card" class="custom-card d-none">
+          <div class="card-header-clean">
+            <h5><i class="bi bi-clipboard2-pulse-fill text-primary me-2"></i> Prediction Result</h5>
+            <span id="result-risk-level" class="badge bg-secondary">Risk Level</span>
+          </div>
+
+          <!-- Banner -->
+          <div id="result-prediction-banner"></div>
+
+          <!-- Risk Box & Probabilities -->
+          <div id="result-box-container" class="prediction-box mt-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="fw-semibold small">High Waste Probability:</span>
+              <strong id="result-prob-high-val" class="fs-5 text-dark">0%</strong>
+            </div>
+
+            <div class="progress mb-2" style="height: 12px;">
+              <div id="result-prob-bar" class="progress-bar bg-danger" role="progressbar" style="width: 0%;"></div>
+            </div>
+
+            <div class="d-flex justify-content-between text-muted small mb-3">
+              <span>Low Waste Chance: <strong id="result-prob-low-val">0%</strong></span>
+              <span>Threshold: <strong>>15%</strong></span>
+            </div>
+
+            <!-- Recommended Prep Quantity -->
+            <div class="p-3 bg-white rounded border d-flex justify-content-between align-items-center">
+              <div>
+                <small class="text-muted d-block">Recommended Preparation Quantity:</small>
+                <span class="text-dark small">Calculated with safe buffer</span>
+              </div>
+              <h4 id="result-recommended-kg" class="fw-bold text-primary mb-0">-- kg</h4>
+            </div>
+          </div>
+
+          <!-- Waste Reduction Suggestions -->
+          <div class="mt-4">
+            <h6 class="fw-bold mb-2"><i class="bi bi-lightbulb text-warning me-1"></i> Kitchen Action Plan & Suggestions:</h6>
+            <div id="result-suggestions-list">
+              <!-- Dynamically rendered suggestions -->
+            </div>
+          </div>
+
+          <!-- Historical Context Breakdown -->
+          <div class="mt-4">
+            <h6 class="fw-bold mb-2"><i class="bi bi-clock-history me-1"></i> Automatic Historical Insights:</h6>
+            <div id="result-historical-analysis">
+              <!-- Dynamically rendered prior statistics -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Initial Placeholder State -->
+        <div class="custom-card text-center py-5" id="placeholder-box">
+          <div class="py-4">
+            <i class="bi bi-cpu-fill text-muted" style="font-size: 3.5rem;"></i>
+            <h5 class="fw-semibold mt-3 text-dark">Awaiting Meal Parameters</h5>
+            <p class="text-muted small px-3">
+              Fill in the form on the left and click <strong>"Run Food Waste Prediction"</strong>. The machine learning model will evaluate the input against prior historical records to compute the risk level and mitigation plan.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container text-center small">
+      Smart Mess Food Waste Prediction System &copy; 2026. Zero Data Leakage Architecture.
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/predict.js"></script>
+  <script>
+    document.getElementById('prediction-form').addEventListener('submit', () => {
+      document.getElementById('placeholder-box').classList.add('d-none');
+    });
+  </script>
+</body>
+</html>

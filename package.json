@@ -1,0 +1,30 @@
+{
+  "name": "smart-mess-food-waste-predictor",
+  "version": "1.0.0",
+  "description": "Smart Mess Food Waste Prediction System using Python, Node, MongoDB with PyMongo, and Logistic Regression",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev:node": "node --watch server/server.js",
+    "dev:python": "python backend/app.py",
+    "seed": "python backend/synthetic_data.py",
+    "train": "python -m backend.ml.model",
+    "test": "python test_app.py"
+  },
+  "keywords": [
+    "food-waste",
+    "machine-learning",
+    "logistic-regression",
+    "mongodb",
+    "express",
+    "hostel-mess"
+  ],
+  "author": "Smart Mess Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.3"
+  }
+}

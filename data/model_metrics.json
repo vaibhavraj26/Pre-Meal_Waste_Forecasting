@@ -1,0 +1,91 @@
+{
+  "model_name": "Logistic Regression Classifier",
+  "last_trained": "2026-11-03T13:16:24.176696",
+  "total_records_trained": 1200,
+  "train_samples": 960,
+  "test_samples": 240,
+  "accuracy": 57.5,
+  "precision": 94.53,
+  "recall": 56.02,
+  "f1_score": 70.35,
+  "roc_auc": 68.36,
+  "confusion_matrix": {
+    "raw": [
+      [
+        17,
+        7
+      ],
+      [
+        95,
+        121
+      ]
+    ],
+    "true_negatives": 17,
+    "false_positives": 7,
+    "false_negatives": 95,
+    "true_positives": 121
+  },
+  "top_risk_factors": [
+    {
+      "feature": "is_holiday_or_event",
+      "weight": 1.3823,
+      "impact": "Increases Waste"
+    },
+    {
+      "feature": "historical_weekday_avg_waste",
+      "weight": 0.9479,
+      "impact": "Increases Waste"
+    },
+    {
+      "feature": "historical_meal_avg_waste",
+      "weight": -0.5143,
+      "impact": "Decreases Waste"
+    },
+    {
+      "feature": "weather_Hot",
+      "weight": 0.4552,
+      "impact": "Increases Waste"
+    },
+    {
+      "feature": "food_category_Mughlai/Special",
+      "weight": -0.3933,
+      "impact": "Decreases Waste"
+    },
+    {
+      "feature": "menu_complexity_Heavy",
+      "weight": 0.3852,
+      "impact": "Increases Waste"
+    },
+    {
+      "feature": "menu_complexity_Moderate",
+      "weight": -0.2857,
+      "impact": "Decreases Waste"
+    },
+    {
+      "feature": "food_category_North Indian",
+      "weight": 0.2751,
+      "impact": "Increases Waste"
+    },
+    {
+      "feature": "meal_type_Breakfast",
+      "weight": 0.267,
+      "impact": "Increases Waste"
+    },
+    {
+      "feature": "weather_Rainy",
+      "weight": -0.2191,
+      "impact": "Decreases Waste"
+    },
+    {
+      "feature": "food_category_South Indian",
+      "weight": -0.2185,
+      "impact": "Decreases Waste"
+    },
+    {
+      "feature": "food_category_South/West Indian",
+      "weight": 0.1934,
+      "impact": "Increases Waste"
+    }
+  ],
+  "status": "ready"
+}
