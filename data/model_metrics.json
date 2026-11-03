@@ -1,90 +1,90 @@
 {
   "model_name": "Logistic Regression Classifier",
-  "last_trained": "2026-11-03T13:16:24.176696",
-  "total_records_trained": 1200,
-  "train_samples": 960,
-  "test_samples": 240,
-  "accuracy": 57.5,
-  "precision": 94.53,
-  "recall": 56.02,
-  "f1_score": 70.35,
-  "roc_auc": 68.36,
+  "last_trained": "2026-11-03T18:51:19.956483",
+  "total_records_trained": 1202,
+  "train_samples": 961,
+  "test_samples": 241,
+  "accuracy": 59.75,
+  "precision": 94.12,
+  "recall": 58.99,
+  "f1_score": 72.52,
+  "roc_auc": 66.42,
   "confusion_matrix": {
     "raw": [
       [
-        17,
-        7
+        16,
+        8
       ],
       [
-        95,
-        121
+        89,
+        128
       ]
     ],
-    "true_negatives": 17,
-    "false_positives": 7,
-    "false_negatives": 95,
-    "true_positives": 121
+    "true_negatives": 16,
+    "false_positives": 8,
+    "false_negatives": 89,
+    "true_positives": 128
   },
   "top_risk_factors": [
     {
       "feature": "is_holiday_or_event",
-      "weight": 1.3823,
+      "weight": 1.3514,
       "impact": "Increases Waste"
     },
     {
       "feature": "historical_weekday_avg_waste",
-      "weight": 0.9479,
+      "weight": 0.9206,
+      "impact": "Increases Waste"
+    },
+    {
+      "feature": "food_category_South/West Indian",
+      "weight": 0.6331,
       "impact": "Increases Waste"
     },
     {
       "feature": "historical_meal_avg_waste",
-      "weight": -0.5143,
-      "impact": "Decreases Waste"
-    },
-    {
-      "feature": "weather_Hot",
-      "weight": 0.4552,
-      "impact": "Increases Waste"
-    },
-    {
-      "feature": "food_category_Mughlai/Special",
-      "weight": -0.3933,
-      "impact": "Decreases Waste"
-    },
-    {
-      "feature": "menu_complexity_Heavy",
-      "weight": 0.3852,
-      "impact": "Increases Waste"
-    },
-    {
-      "feature": "menu_complexity_Moderate",
-      "weight": -0.2857,
-      "impact": "Decreases Waste"
-    },
-    {
-      "feature": "food_category_North Indian",
-      "weight": 0.2751,
-      "impact": "Increases Waste"
-    },
-    {
-      "feature": "meal_type_Breakfast",
-      "weight": 0.267,
-      "impact": "Increases Waste"
-    },
-    {
-      "feature": "weather_Rainy",
-      "weight": -0.2191,
+      "weight": -0.4959,
       "impact": "Decreases Waste"
     },
     {
       "feature": "food_category_South Indian",
-      "weight": -0.2185,
+      "weight": -0.4843,
       "impact": "Decreases Waste"
     },
     {
-      "feature": "food_category_South/West Indian",
-      "weight": 0.1934,
+      "feature": "weather_Hot",
+      "weight": 0.4263,
       "impact": "Increases Waste"
+    },
+    {
+      "feature": "food_category_Mughlai/Special",
+      "weight": -0.3315,
+      "impact": "Decreases Waste"
+    },
+    {
+      "feature": "menu_complexity_Heavy",
+      "weight": 0.3112,
+      "impact": "Increases Waste"
+    },
+    {
+      "feature": "menu_complexity_Moderate",
+      "weight": -0.2725,
+      "impact": "Decreases Waste"
+    },
+    {
+      "feature": "meal_type_Breakfast",
+      "weight": 0.2602,
+      "impact": "Increases Waste"
+    },
+    {
+      "feature": "weather_Rainy",
+      "weight": -0.2225,
+      "impact": "Decreases Waste"
+    },
+    {
+      "feature": "weather_Humid",
+      "weight": -0.2224,
+      "impact": "Decreases Waste"
     }
   ],
   "status": "ready"
